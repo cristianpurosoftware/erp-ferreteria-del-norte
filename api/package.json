@@ -23,6 +23,8 @@
     "seed:demo-branch": "npx ts-node src/seeds/demo-branch.seed.ts",
     "seed:cleanup-branch": "npx ts-node src/seeds/cleanup-branch.seed.ts",
     "seed:ferreteria": "npx ts-node src/seeds/ferreteria-del-norte-demo.seed.ts",
+    "seed:prod": "node build/seeds/index.js",
+    "seed:ferreteria:prod": "node build/seeds/ferreteria-del-norte-demo.seed.js",
     "csv-to-ferreteria-catalog": "npx ts-node scripts/csv-to-ferreteria-catalog.ts",
     "ts.check": "tsc --project tsconfig.json",
     "gen:entities": "node scripts/gen-entities.mjs",
