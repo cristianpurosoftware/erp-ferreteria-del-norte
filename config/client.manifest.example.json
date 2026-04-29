@@ -1,0 +1,33 @@
+{
+  "$schema": "./client.manifest.schema.json",
+  "clientSlug": "demo",
+  "clientName": "Demo",
+  "region": "gru",
+  "github": {
+    "owner": "cristianpurosoftware",
+    "repo": "erp-cliente-demo"
+  },
+  "fly": {
+    "production": "erp-cliente-demo",
+    "staging": "erp-cliente-demo-staging"
+  },
+  "neon": {
+    "projectId": "",
+    "prodBranch": "main",
+    "stagingBranch": "dev"
+  },
+  "vercel": {
+    "projectName": "erp-cliente-demo",
+    "rootDirectory": "frontend",
+    "productionBranch": "main",
+    "stagingBranch": "dev"
+  },
+  "axiom": {
+    "productionDataset": "erp-demo-production",
+    "stagingDataset": "erp-demo-staging"
+  },
+  "owner": {
+    "name": "",
+    "email": ""
+  }
+}

@@ -1,0 +1,81 @@
+# ─── Dependencies ────────────────────────────────────────────
+node_modules/
+.pnpm-store/
+
+# ─── Build output ────────────────────────────────────────────
+# Next.js (frontend)
+.next/
+out/
+
+# Generic
+dist/
+build/
+
+# ─── TypeScript ──────────────────────────────────────────────
+*.tsbuildinfo
+next-env.d.ts
+
+# ─── Env ─────────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+.env.infra
+# Never ignore example files
+!.env.example
+
+# ─── Secrets / keys ──────────────────────────────────────────
+*.pem
+
+# ─── Logs ────────────────────────────────────────────────────
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs/
+*.log
+
+# ─── IDE / editor ────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ─── OS ──────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ─── Deployment platforms ────────────────────────────────────
+.vercel/
+.railway/
+
+# ─── Testing / coverage ──────────────────────────────────────
+coverage/
+.nyc_output/
+
+# ─── Claude agents (local plans & memory) ────────────────────
+# Keep CLAUDE.md (project-wide assistant instructions) tracked.
+.claude/
+**/.claude/
+
+# Ignore .agents/ except for versioned skills (propagated by the template).
+.agents/*
+**/.agents/*
+!.agents/skills/
+!**/.agents/skills/
+
+# ─── Skill outputs ───────────────────────────────────────────
+graphify-out/
+
+# ─── Temp / scratch ──────────────────────────────────────────
+tmp/
+temp/
+*.dump
+*.lockb
+screenshots
+
+# ─── Misc ────────────────────────────────────────────────────
+nul
+*.rej
+api/fly.toml
+.erp-bootstrap-*
+ops/hermes/fly.toml

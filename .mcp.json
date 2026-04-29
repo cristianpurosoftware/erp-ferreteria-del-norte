@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "erp-graph": {
+      "command": "/opt/homebrew/opt/python@3.12/bin/python3.12",
+      "args": [
+        "-m", "graphify.serve",
+        "/Users/macpro/Documents/work/purosoftware-erp-base/graphify-out/graph.json"
+      ]
+    }
+  }
+}

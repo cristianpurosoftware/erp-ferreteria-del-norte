@@ -1,0 +1,37 @@
+# Template fly.toml for ERP API apps.
+# Per client: copy to api/fly.toml and replace {{APP_NAME}} with the
+# prod Fly app name (e.g. erp-cliente-demo). CI will use --app override
+# to deploy the staging app with the same Dockerfile.
+app = "{{APP_NAME}}"
+primary_region = "gru"
+kill_signal = "SIGINT"
+kill_timeout = "30s"
+
+[build]
+
+[env]
+  PORT = "8081"
+  NODE_ENV = "production"
+
+[deploy]
+  release_command = "npm run migrate:prod"
+  strategy = "rolling"
+
+[http_service]
+  internal_port = 8081
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [[http_service.checks]]
+    interval = "15s"
+    timeout = "2s"
+    grace_period = "15s"
+    method = "GET"
+    path = "/health"
+
+[[vm]]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1

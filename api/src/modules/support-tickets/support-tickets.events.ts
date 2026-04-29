@@ -1,0 +1,15 @@
+export const SupportTicketEvents = {
+  CREATED: 'support_ticket.created',
+  STATUS_CHANGED: 'support_ticket.status_changed',
+  UPDATED: 'support_ticket.updated',
+  PRIORITY_CHANGED: 'support_ticket.priority_changed',
+  RESOLVED: 'support_ticket.resolved',
+  REOPENED: 'support_ticket.reopened',
+  ATTACHMENT_ADDED: 'support_ticket.attachment_added',
+  CUSTOMER_MESSAGE: 'support_ticket.customer_message',
+  SUPPORT_MESSAGE: 'support_ticket.support_message',
+  AGENT_REPLIED: 'support_ticket.agent_replied',
+  AGENT_FAILED: 'support_ticket.agent_failed',
+  HANDED_OFF_TO_HUMAN: 'support_ticket.handed_off_to_human',
+  RETURNED_TO_AGENT: 'support_ticket.returned_to_agent',
+} as const;

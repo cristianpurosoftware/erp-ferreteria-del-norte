@@ -1,0 +1,145 @@
+import { Router } from 'express';
+import { verifyToken } from './middlewares/auth';
+import { requestContext } from './middlewares/request-context.middleware';
+import { globalLimiter } from './middlewares/rate-limit';
+
+// Module routers
+import authRouter from './modules/auth/auth.router';
+import usersRouter from './modules/users/users.router';
+import rolesRouter from './modules/roles/roles.router';
+import permissionsRouter from './modules/permissions/permissions.router';
+import companyRouter from './modules/company/company.router';
+import branchesRouter from './modules/branches/branches.router';
+import warehousesRouter from './modules/warehouses/warehouses.router';
+import categoriesRouter from './modules/categories/categories.router';
+import brandsRouter from './modules/brands/brands.router';
+import unitsRouter from './modules/units/units.router';
+import priceListsRouter from './modules/price-lists/price-lists.router';
+import taxesRouter from './modules/taxes/taxes.router';
+import invoiceTypesRouter from './modules/invoice-types/invoice-types.router';
+import paymentConditionsRouter from './modules/payment-conditions/payment-conditions.router';
+import customersRouter from './modules/customers/customers.router';
+import productsRouter from './modules/products/products.router';
+import inventoryRouter from './modules/inventory/inventory.router';
+import ordersRouter from './modules/orders/orders.router';
+import accountsRouter from './modules/accounts/accounts.router';
+import paymentsRouter from './modules/payments/payments.router';
+import cashboxRouter from './modules/cashbox/cashbox.router';
+import invoicesRouter from './modules/invoices/invoices.router';
+import suppliersRouter from './modules/suppliers/suppliers.router';
+import purchasesRouter from './modules/purchases/purchases.router';
+import reportsRouter from './modules/reports/reports.router';
+import integrationsRouter from './modules/integrations/integrations.router';
+import auditRouter from './modules/audit/audit.router';
+import paymentMethodsRouter from './modules/payment-methods/payment-methods.router';
+import salesZonesRouter from './modules/sales-zones/sales-zones.router';
+import routesRouter from './modules/routes/routes.router';
+import customerVisitsRouter from './modules/routes/customer-visits.router';
+import promotionsRouter from './modules/promotions/promotions.router';
+import commissionsRouter from './modules/commissions/commissions.router';
+import warehouseLocationsRouter from './modules/warehouse-locations/warehouse-locations.router';
+import lotsRouter from './modules/lots/lots.router';
+import vehiclesRouter from './modules/vehicles/vehicles.router';
+import driversRouter from './modules/drivers/drivers.router';
+import pickingRouter from './modules/picking/picking.router';
+import shipmentsRouter from './modules/shipments/shipments.router';
+import dispatchSheetsRouter from './modules/dispatch-sheets/dispatch-sheets.router';
+import returnsRouter from './modules/returns/returns.router';
+import inventoryCountsRouter from './modules/inventory-counts/inventory-counts.router';
+import supplierInvoicesRouter from './modules/supplier-invoices/supplier-invoices.router';
+import supplierDeliveryNotesRouter from './modules/supplier-delivery-notes/supplier-delivery-notes.router';
+import threeWayMatchRouter from './modules/three-way-match/three-way-match.router';
+import supplierClaimsRouter from './modules/supplier-claims/supplier-claims.router';
+import jurisdictionsRouter from './modules/jurisdictions/jurisdictions.router';
+import deliveryNotesRouter from './modules/delivery-notes/delivery-notes.router';
+import creditNotesRouter from './modules/credit-notes/credit-notes.router';
+import debitNotesRouter from './modules/debit-notes/debit-notes.router';
+import fiscalAuthorizationsRouter from './modules/fiscal-authorizations/fiscal-authorizations.router';
+import checksRouter from './modules/checks/checks.router';
+import bankAccountsRouter from './modules/bank-accounts/bank-accounts.router';
+import collectorRenditionsRouter from './modules/collector-renditions/collector-renditions.router';
+import bankStatementsRouter from './modules/bank-statements/bank-statements.router';
+import reconciliationRouter from './modules/reconciliation/reconciliation.router';
+import withholdingsRouter from './modules/withholdings/withholdings.router';
+import paymentOrdersRouter from './modules/payment-orders/payment-orders.router';
+import paymentBatchesRouter from './modules/payment-orders/payment-batches.router';
+import searchRouter from './modules/search/search.router';
+import supportTicketsRouter from './modules/support-tickets/support-tickets.router';
+import posRouter from './modules/pos/pos.router';
+
+const apiRouter = Router();
+
+// Global rate limit applies to every API request (including /auth).
+apiRouter.use(globalLimiter);
+
+// Public routes
+apiRouter.use('/auth', authRouter);
+
+// All routes below are protected and run inside a request context
+// (verifyToken populates req.user, requestContext captures userId/ip/requestId
+// into AsyncLocalStorage for use by audit/event code)
+apiRouter.use(verifyToken, requestContext);
+
+apiRouter.use('/users', usersRouter);
+apiRouter.use('/roles', rolesRouter);
+apiRouter.use('/permissions', permissionsRouter);
+apiRouter.use('/company', companyRouter);
+apiRouter.use('/branches', branchesRouter);
+apiRouter.use('/warehouses', warehousesRouter);
+apiRouter.use('/categories', categoriesRouter);
+apiRouter.use('/brands', brandsRouter);
+apiRouter.use('/units', unitsRouter);
+apiRouter.use('/price-lists', priceListsRouter);
+apiRouter.use('/taxes', taxesRouter);
+apiRouter.use('/invoice-types', invoiceTypesRouter);
+apiRouter.use('/payment-conditions', paymentConditionsRouter);
+apiRouter.use('/customers', customersRouter);
+apiRouter.use('/products', productsRouter);
+apiRouter.use('/inventory', inventoryRouter);
+apiRouter.use('/orders', ordersRouter);
+apiRouter.use('/accounts', accountsRouter);
+apiRouter.use('/payments', paymentsRouter);
+apiRouter.use('/cashbox', cashboxRouter);
+apiRouter.use('/invoices', invoicesRouter);
+apiRouter.use('/suppliers', suppliersRouter);
+apiRouter.use('/purchases', purchasesRouter);
+apiRouter.use('/reports', reportsRouter);
+apiRouter.use('/integrations', integrationsRouter);
+apiRouter.use('/audit', auditRouter);
+apiRouter.use('/payment-methods', paymentMethodsRouter);
+apiRouter.use('/sales-zones', salesZonesRouter);
+apiRouter.use('/routes', routesRouter);
+apiRouter.use('/customer-visits', customerVisitsRouter);
+apiRouter.use('/promotions', promotionsRouter);
+apiRouter.use('/commissions', commissionsRouter);
+apiRouter.use('/warehouse-locations', warehouseLocationsRouter);
+apiRouter.use('/lots', lotsRouter);
+apiRouter.use('/vehicles', vehiclesRouter);
+apiRouter.use('/drivers', driversRouter);
+apiRouter.use('/picking-tasks', pickingRouter);
+apiRouter.use('/shipments', shipmentsRouter);
+apiRouter.use('/dispatch-sheets', dispatchSheetsRouter);
+apiRouter.use('/returns', returnsRouter);
+apiRouter.use('/inventory-counts', inventoryCountsRouter);
+apiRouter.use('/supplier-invoices', supplierInvoicesRouter);
+apiRouter.use('/supplier-delivery-notes', supplierDeliveryNotesRouter);
+apiRouter.use('/three-way-match', threeWayMatchRouter);
+apiRouter.use('/supplier-claims', supplierClaimsRouter);
+apiRouter.use('/jurisdictions', jurisdictionsRouter);
+apiRouter.use('/delivery-notes', deliveryNotesRouter);
+apiRouter.use('/credit-notes', creditNotesRouter);
+apiRouter.use('/debit-notes', debitNotesRouter);
+apiRouter.use('/fiscal-authorizations', fiscalAuthorizationsRouter);
+apiRouter.use('/checks', checksRouter);
+apiRouter.use('/bank-accounts', bankAccountsRouter);
+apiRouter.use('/collector-renditions', collectorRenditionsRouter);
+apiRouter.use('/bank-statements', bankStatementsRouter);
+apiRouter.use('/reconciliation', reconciliationRouter);
+apiRouter.use('/withholdings', withholdingsRouter);
+apiRouter.use('/payment-orders', paymentOrdersRouter);
+apiRouter.use('/payment-batches', paymentBatchesRouter);
+apiRouter.use('/search', searchRouter);
+apiRouter.use('/support-tickets', supportTicketsRouter);
+apiRouter.use('/pos', posRouter);
+
+export default apiRouter;

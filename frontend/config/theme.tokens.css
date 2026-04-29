@@ -1,0 +1,128 @@
+/* ==========================================================
+   Client theme tokens — ERP Base
+   ----------------------------------------------------------
+   Este archivo define TODO el branding visual del cliente:
+   paleta de marca (p1-p5), colores de Shadcn (primary,
+   secondary, muted, etc.), sidebar, charts y radius.
+
+   REGLA: este archivo se overridea por cliente fork.
+   El template lo mantiene con valores de referencia
+   (Puro Software: navy #272a45, blue #38b6ff,
+   blanco y negro). Los updates del template
+   a `globals.css` se propagan sin conflicto porque la
+   estructura (mapeos @theme + @layer base) vive ahí,
+   no acá.
+
+   Para customizar un cliente:
+   1. Cambiar los valores oklch abajo
+   2. NO cambiar los nombres de las variables
+   3. NO tocar globals.css
+   ========================================================== */
+
+:root {
+  --radius: 0.625rem;
+
+  /* Paleta de marca — p1-p5 estáticos (no cambian entre light/dark)
+     p1 = blanco frio       — fondos suaves, highlights sutiles
+     p2 = celeste claro     — acentos secundarios, charts
+     p3 = PRIMARY (#38b6ff) — acciones principales, estados activos
+     p4 = NAVY (#272a45)    — texto fuerte, superficies de marca
+     p5 = negro navy        — sidebar y fondos profundos */
+  --p1: oklch(0.962 0.010 252.8);
+  --p2: oklch(0.840 0.092 236.7);
+  --p3: oklch(0.741 0.150 239.6);
+  --p4: oklch(0.296 0.049 278.1);
+  --p5: oklch(0.149 0.037 275.3);
+
+  /* LIGHT — fondo frio, cards blancas, texto navy y acentos puntuales */
+  --background: oklch(0.981 0.005 258.3);
+  --foreground: oklch(0.296 0.049 278.1);
+
+  --card: oklch(1.000 0.000 0);
+  --card-foreground: oklch(0.296 0.049 278.1);
+
+  --popover: oklch(1.000 0.000 0);
+  --popover-foreground: oklch(0.296 0.049 278.1);
+
+  --primary: oklch(0.741 0.150 239.6);
+  --primary-foreground: oklch(0.149 0.037 275.3);
+
+  --secondary: oklch(0.962 0.010 252.8);
+  --secondary-foreground: oklch(0.296 0.049 278.1);
+
+  --muted: oklch(0.962 0.010 252.8);
+  --muted-foreground: oklch(0.542 0.035 260.6);
+
+  --accent: oklch(0.929 0.016 257.2);
+  --accent-foreground: oklch(0.296 0.049 278.1);
+
+  --destructive: oklch(0.577 0.245 27.325);
+
+  --border: oklch(0.929 0.016 257.2);
+  --input: oklch(0.929 0.016 257.2);
+  --ring: oklch(0.741 0.150 239.6);
+
+  /* Charts light — marca sobria, celeste como protagonista */
+  --chart-1: oklch(0.741 0.150 239.6);
+  --chart-2: oklch(0.296 0.049 278.1);
+  --chart-3: oklch(0.542 0.035 260.6);
+  --chart-4: oklch(0.840 0.092 236.7);
+  --chart-5: oklch(0.448 0.034 263.2);
+
+  /* Sidebar light — negro navy con navegacion de marca */
+  --sidebar: oklch(0.149 0.037 275.3);
+  --sidebar-foreground: oklch(0.929 0.016 257.2);
+  --sidebar-primary: oklch(0.741 0.150 239.6);
+  --sidebar-primary-foreground: oklch(0.149 0.037 275.3);
+  --sidebar-accent: oklch(0.269 0.045 275.7);
+  --sidebar-accent-foreground: oklch(1.000 0.000 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.741 0.150 239.6);
+}
+
+.dark {
+  /* DARK — negro navy profundo, superficies discretas y acentos celestes */
+  --background: oklch(0.149 0.037 275.3);
+  --foreground: oklch(0.981 0.005 258.3);
+
+  --card: oklch(0.198 0.036 275.4);
+  --card-foreground: oklch(0.981 0.005 258.3);
+
+  --popover: oklch(0.198 0.036 275.4);
+  --popover-foreground: oklch(0.981 0.005 258.3);
+
+  --primary: oklch(0.741 0.150 239.6);
+  --primary-foreground: oklch(0.149 0.037 275.3);
+
+  --secondary: oklch(0.269 0.045 275.7);
+  --secondary-foreground: oklch(0.981 0.005 258.3);
+
+  --muted: oklch(0.218 0.041 276.2);
+  --muted-foreground: oklch(0.840 0.092 236.7);
+
+  --accent: oklch(0.269 0.045 275.7);
+  --accent-foreground: oklch(0.981 0.005 258.3);
+
+  --destructive: oklch(0.660 0.215 24.0);
+
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 13%);
+  --ring: oklch(0.741 0.150 239.6);
+
+  /* Charts dark — alto contraste sobre negro/navy */
+  --chart-1: oklch(0.741 0.150 239.6);
+  --chart-2: oklch(0.981 0.005 258.3);
+  --chart-3: oklch(0.840 0.092 236.7);
+  --chart-4: oklch(0.350 0.049 277.3);
+  --chart-5: oklch(0.542 0.035 260.6);
+
+  /* Sidebar dark — negro de marca con navegacion navy */
+  --sidebar: oklch(0.149 0.037 275.3);
+  --sidebar-foreground: oklch(0.929 0.016 257.2);
+  --sidebar-primary: oklch(0.741 0.150 239.6);
+  --sidebar-primary-foreground: oklch(0.149 0.037 275.3);
+  --sidebar-accent: oklch(0.269 0.045 275.7);
+  --sidebar-accent-foreground: oklch(1.000 0.000 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.741 0.150 239.6);
+}

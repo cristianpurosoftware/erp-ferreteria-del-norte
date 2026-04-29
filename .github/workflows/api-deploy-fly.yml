@@ -1,0 +1,42 @@
+name: API Deploy (Fly.io)
+
+on:
+  push:
+    branches: [main, dev]
+    paths:
+      - 'api/**'
+      - '.github/workflows/api-deploy-fly.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    # Skip when the repo doesn't have Fly wiring (template repo, feature branches)
+    if: ${{ vars.FLY_APP_PROD != '' || vars.FLY_APP_STAGING != '' }}
+    runs-on: ubuntu-latest
+    env:
+      FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - name: Resolve target app
+        id: target
+        run: |
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            echo "app=${{ vars.FLY_APP_PROD }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "app=${{ vars.FLY_APP_STAGING }}" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Deploy
+        working-directory: api
+        run: |
+          APP="${{ steps.target.outputs.app }}"
+          if [ -z "$APP" ]; then
+            echo "No FLY_APP_* variable set for branch ${{ github.ref_name }}. Skipping."
+            exit 0
+          fi
+          echo "Deploying to $APP..."
+          flyctl deploy --remote-only --app "$APP"

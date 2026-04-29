@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: erp_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-erp_base}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASS:-postgres}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - erp_network
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: erp_api
+    restart: unless-stopped
+    ports:
+      - "${PORT:-8081}:${PORT:-8081}"
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - PORT=${PORT:-8081}
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASS=${DB_PASS:-postgres}
+      - DB_NAME=${DB_NAME:-erp_base}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:3000}
+      - CLIENT_NAME=${CLIENT_NAME:-erp-base}
+    depends_on:
+      - postgres
+    networks:
+      - erp_network
+
+volumes:
+  postgres_data:
+
+networks:
+  erp_network:
+    driver: bridge
