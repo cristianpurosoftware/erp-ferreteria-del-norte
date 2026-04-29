@@ -36,4 +36,8 @@ COPY package.json ./
 EXPOSE 8081
 USER node
 ENTRYPOINT ["/sbin/tini", "--"]
-CMD ["node", "build/index.js"]
+# Run migrations on every container start, then boot the API. Migrations are
+# idempotent (TypeORM tracks applied ones in the migrations table). This
+# avoids Coolify's pre_deployment_command edge case where the very first
+# deploy has no running container to exec into.
+CMD ["sh", "-c", "npm run migrate:prod && node build/index.js"]
