@@ -40,4 +40,4 @@ ENTRYPOINT ["/sbin/tini", "--"]
 # idempotent (TypeORM tracks applied ones in the migrations table). This
 # avoids Coolify's pre_deployment_command edge case where the very first
 # deploy has no running container to exec into.
-CMD ["sh", "-c", "npm run migrate:prod && node build/index.js"]
+CMD ["sh", "-c", "echo '=== STARTING ==='; npm run migrate:prod 2>&1 | tee /tmp/migrate.log; echo '=== MIGRATE DONE ==='; cat /tmp/migrate.log | tail -5; node build/index.js"]
