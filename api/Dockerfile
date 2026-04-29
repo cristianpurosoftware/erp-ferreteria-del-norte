@@ -10,9 +10,14 @@ RUN npm ci --omit=dev --ignore-scripts
 # ─── Stage 2: build (needs dev deps for tsc) ───────────────────
 FROM node:${NODE_VERSION} AS build
 WORKDIR /app
+# Override NODE_ENV here so npm ci installs devDependencies (tsc, types,
+# faker for seed compilation) even when Coolify injects NODE_ENV=production
+# at build time.
+ENV NODE_ENV=development
 COPY package.json package-lock.json* tsconfig.json ./
-RUN npm ci --ignore-scripts
+RUN npm ci --include=dev --ignore-scripts
 COPY src ./src
+COPY scripts ./scripts
 RUN npm run build
 
 # ─── Stage 3: runtime ──────────────────────────────────────────
