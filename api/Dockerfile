@@ -21,6 +21,9 @@ COPY src ./src
 # whose presence shifts tsc's inferred rootDir and moves outputs into
 # build/src/* instead of build/*.
 RUN npm run build
+# Copy non-TS asset files needed by compiled seeds (catalog JSON, etc.)
+RUN mkdir -p build/seeds/demo \
+ && cp -R src/seeds/demo/. build/seeds/demo/
 
 # ─── Stage 3: runtime ──────────────────────────────────────────
 FROM node:${NODE_VERSION} AS runtime
