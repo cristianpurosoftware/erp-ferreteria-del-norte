@@ -54,6 +54,14 @@ const BRAND_SEEDS = [
   'Sin Marca',
 ];
 
+const WALKTHROUGH_STOCK_BY_SKU: Record<string, number> = {
+  // Keep these SKUs demo-safe for the commercial POS walkthrough.
+  // They are documented in docs/demo-sales-runbook-ferreteria.md.
+  '108050': 180, // Tornillo Drywall Fino 6 x 1" - x 200 Unidades
+  '131009': 12,  // Taladro Percutor 13 mm - HP1630 - 710w
+  '147001': 36,  // Cemento de Contacto Fanacola 90 x 40 Grs
+};
+
 // Hash a string deterministically into a bucket index — used to reproducibly
 // pick a brand/supplier per SKU.
 function hashIndex(seed: string, buckets: number): number {
@@ -215,13 +223,14 @@ export async function seedFerreteriaDelNorteDemo() {
   let stockRows = 0;
   for (let i = 0; i < productIds.length; i++) {
     const productId = productIds[i];
+    const sku = catalog.products[i].sku;
     for (const wh of warehouses) {
       const existing = await stockRepo.findOne({
         where: { productId, warehouseId: wh.id, variantId: undefined as any },
       });
       if (existing) continue;
       const seed = `${productId}:${wh.id}`;
-      const qty = pickStockQty(seed);
+      const qty = WALKTHROUGH_STOCK_BY_SKU[sku] ?? pickStockQty(seed);
       const minStock = pickMinStock(qty);
       await stockRepo.save(stockRepo.create({
         productId,
