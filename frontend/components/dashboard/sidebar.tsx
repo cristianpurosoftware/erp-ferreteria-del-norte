@@ -109,6 +109,75 @@ export interface NavGroup {
   items: NavItem[];
 }
 
+const DEMO_SCOPE = process.env.NEXT_PUBLIC_DEMO_SCOPE ?? "";
+const FERRETERIA_DEMO_SCOPES = new Set([
+  "ferreteria",
+  "ferreteria-demo",
+  "hardware-store",
+  "pos-demo",
+  "sales-demo",
+]);
+const isFerreteriaDemoScope = FERRETERIA_DEMO_SCOPES.has(DEMO_SCOPE.toLowerCase());
+
+const FERRETERIA_DEMO_ALLOWED_HREFS = new Set([
+  "/pos",
+  "/dashboard",
+  "/catalogo",
+  "/stock/niveles",
+  "/stock/movimientos",
+  "/caja",
+  "/clientes",
+  "/comprobantes",
+  "/comprobantes/remitos",
+  "/reportes/ventas",
+  "/reportes/stock",
+  "/configuracion/empresa",
+]);
+
+const FERRETERIA_DEMO_NAV_LABEL_OVERRIDES: Record<string, string> = {
+  "/pos": "Mostrador / POS",
+  "/comprobantes": "Facturación",
+};
+
+function applyFerreteriaDemoNavFraming(item: NavItem): NavItem {
+  if (isBranch(item)) {
+    const isBillingBranch = item.children.some((leaf) => leaf.href === "/comprobantes");
+    return {
+      ...item,
+      title: isBillingBranch ? "Facturación" : item.title,
+      children: item.children.map((leaf) => ({
+        ...leaf,
+        title: FERRETERIA_DEMO_NAV_LABEL_OVERRIDES[leaf.href] ?? leaf.title,
+      })),
+    };
+  }
+
+  return {
+    ...item,
+    title: FERRETERIA_DEMO_NAV_LABEL_OVERRIDES[item.href] ?? item.title,
+  };
+}
+
+export function getDemoScopedNavGroups(): NavGroup[] {
+  if (!isFerreteriaDemoScope) return NAV_GROUPS;
+
+  return NAV_GROUPS
+    .map((group) => ({
+      ...group,
+      defaultOpen: group.key === "operaciones",
+      items: group.items
+        .map((item): NavItem | null => {
+          if (isBranch(item)) {
+            const children = item.children.filter((leaf) => FERRETERIA_DEMO_ALLOWED_HREFS.has(leaf.href));
+            return children.length > 0 ? applyFerreteriaDemoNavFraming({ ...item, children }) : null;
+          }
+          return FERRETERIA_DEMO_ALLOWED_HREFS.has(item.href) ? applyFerreteriaDemoNavFraming(item) : null;
+        })
+        .filter((item): item is NavItem => item !== null),
+    }))
+    .filter((group) => group.items.length > 0);
+}
+
 export const NAV_GROUPS: NavGroup[] = [
   {
     key: "operaciones",
@@ -567,7 +636,7 @@ export function DashboardSidebar({
 
   const { can } = usePermissions();
   const canRender = (leaf: NavLeaf) => !leaf.permission || can(leaf.permission);
-  const visibleGroups = NAV_GROUPS
+  const visibleGroups = getDemoScopedNavGroups()
     .map((g) => ({
       ...g,
       items: g.items

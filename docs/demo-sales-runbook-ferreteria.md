@@ -94,13 +94,13 @@ Qué decir:
 - [ ] La venta genera ticket/factura con indicación de simulación fiscal.
 - [ ] Stock refleja o permite explicar el impacto de la venta.
 - [ ] Dashboard y reportes no aparecen vacíos.
-- [ ] La navegación no abruma: para llamada comercial priorizar Dashboard, Mostrador/POS, Catálogo, Stock, Facturación y Reportes.
+- [ ] La navegación no abruma: para llamada comercial priorizar Dashboard, Mostrador/POS, Catálogo, Stock, Facturación y Reportes. Activar `NEXT_PUBLIC_DEMO_SCOPE=ferreteria-demo` en el frontend dev para aplicar el recorte y validar con `npm run test:demo-scope`.
 
 ## Gaps detectados / próximos ajustes
 
 1. **SKU garantizado para walkthrough**: registrar 2–3 SKUs estables, con nombre, precio y stock suficiente, para no improvisar durante la demo.
 2. **Seed Ferretería**: el repo tiene `npm run seed:ferreteria` y `npm run seed:ferreteria:prod`; documentar cuándo usar cada uno y validar si conviene conectarlo al seed principal o mantenerlo explícito.
-3. **Navegación demo reducida**: evaluar scope/rol demo que oculte módulos avanzados durante una primera llamada.
+3. **Navegación demo reducida**: scope versionado en frontend para `NEXT_PUBLIC_DEMO_SCOPE=ferreteria-demo`; mantenerlo cubierto con `npm run test:demo-scope` y configurarlo en el ambiente dev antes de una llamada.
 4. **Docs compartibles**: separar este runbook comercial de handoffs internos que puedan contener URLs de infraestructura, usuarios o credenciales.
 5. **Smoke dev/prod no destructivo**: mantener una checklist curl/browser que no cree ventas salvo en ambiente dev.
 

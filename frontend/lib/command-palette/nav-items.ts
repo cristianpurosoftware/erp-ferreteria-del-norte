@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { NAV_GROUPS, isBranch } from "@/components/dashboard/sidebar";
+import { getDemoScopedNavGroups, isBranch } from "@/components/dashboard/sidebar";
 
 export interface FlatNavItem {
   title: string;
@@ -12,7 +12,7 @@ export interface FlatNavItem {
 export function getFlatNavItems(): FlatNavItem[] {
   const items: FlatNavItem[] = [];
 
-  for (const group of NAV_GROUPS) {
+  for (const group of getDemoScopedNavGroups()) {
     for (const item of group.items) {
       if (isBranch(item)) {
         for (const leaf of item.children) {
