@@ -191,7 +191,30 @@ export function PosClient({ warehouses, customers }: PosClientProps) {
   const filteredCustomers = customers.slice(0, 50);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-4 p-4 h-full overflow-hidden print:hidden">
+    <>
+      {ticket && (
+        <style>{`
+          @page { size: A4; margin: 10mm; }
+          @media print {
+            html, body { background: #fff !important; }
+            body * { visibility: hidden !important; }
+            .pos-print-document, .pos-print-document * { visibility: visible !important; }
+            .pos-print-document {
+              display: block !important;
+              position: fixed !important;
+              inset: 0 auto auto 0 !important;
+              width: 190mm !important;
+              min-height: 277mm !important;
+              margin: 0 !important;
+              padding: 0 !important;
+              background: #fff !important;
+              color: #000 !important;
+              box-shadow: none !important;
+            }
+          }
+        `}</style>
+      )}
+      <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-4 p-4 h-full overflow-hidden print:hidden">
       {/* ─── Left column: scanner + cart ──────────────────── */}
       <div className="flex flex-col gap-3 min-h-0">
         <div className="flex items-center gap-3">
@@ -416,6 +439,7 @@ export function PosClient({ warehouses, customers }: PosClientProps) {
           Finalizar venta · {fmtAR(total)}
         </Button>
       </div>
+      </div>
 
       {/* ─── Ticket modal ───────────────────────────────────── */}
       <Dialog open={!!ticket} onOpenChange={(o) => !o && closeTicketAndReset()}>
@@ -433,46 +457,20 @@ export function PosClient({ warehouses, customers }: PosClientProps) {
         </DialogContent>
       </Dialog>
 
-      {/* ─── Print-only ticket layout ───────────────────────── */}
+      {/* ─── Print-only remito/factura layout ──────────────── */}
       {ticket && (
-        <div className="hidden print:block fixed inset-0 bg-white text-black p-6 font-mono text-xs">
-          <div className="text-center mb-4">
-            <div className="font-bold text-base">FERRETERÍA DEL NORTE</div>
-            <div>{new Date(ticket.sale.createdAt).toLocaleString("es-AR")}</div>
-            <div className="text-[10px]">Venta #{ticket.sale.id.slice(-6).toUpperCase()}</div>
-          </div>
-          <div className="border-t border-b py-2 mb-2">
-            {cart.map((l, i) => (
-              <div key={i} className="flex justify-between">
-                <span className="truncate flex-1">{l.quantity} × {l.name.slice(0, 30)}</span>
-                <span className="tabular-nums">{fmtAR(lineSubtotal(l))}</span>
-              </div>
-            ))}
-          </div>
-          <div className="space-y-0.5">
-            <div className="flex justify-between"><span>SUBTOTAL</span><span>{fmtAR(subtotal)}</span></div>
-            {discountAmount > 0 && (
-              <div className="flex justify-between"><span>DESCUENTO</span><span>- {fmtAR(discountAmount)}</span></div>
-            )}
-            <div className="flex justify-between font-bold text-sm"><span>TOTAL</span><span>{fmtAR(total)}</span></div>
-            <div className="border-t mt-1 pt-1">
-              {pay.cash > 0 && <div className="flex justify-between"><span>Efectivo</span><span>{fmtAR(pay.cash)}</span></div>}
-              {pay.card > 0 && <div className="flex justify-between"><span>Tarjeta</span><span>{fmtAR(pay.card)}</span></div>}
-              {pay.transfer > 0 && <div className="flex justify-between"><span>Transferencia</span><span>{fmtAR(pay.transfer)}</span></div>}
-              {pay.account > 0 && <div className="flex justify-between"><span>Cta. Corriente</span><span>{fmtAR(pay.account)}</span></div>}
-              {change > 0 && <div className="flex justify-between"><span>Vuelto</span><span>{fmtAR(change)}</span></div>}
-            </div>
-          </div>
-          {ticket.invoice && (
-            <div className="mt-3 pt-2 border-t text-[10px]">
-              <div>Factura {ticket.invoice.type} · {ticket.invoice.number ?? "—"}</div>
-              {ticket.invoice.cae && <div>CAE: {ticket.invoice.cae}</div>}
-            </div>
-          )}
-          <div className="text-center mt-4 text-[10px]">¡Gracias por su compra!</div>
-        </div>
+        <PosPrintRemito
+          result={ticket}
+          customerLabel={customer?.label ?? "Consumidor Final"}
+          cart={cart}
+          subtotal={subtotal}
+          discountAmount={discountAmount}
+          total={total}
+          payments={pay}
+          change={change}
+        />
       )}
-    </div>
+    </>
   );
 }
 
@@ -552,6 +550,138 @@ function TicketBody({
           Factura {result.invoice.type} {result.invoice.number ? `#${result.invoice.number}` : ""} · CAE {result.invoice.cae}
         </div>
       )}
+    </div>
+  );
+}
+
+function PosPrintRemito({
+  result,
+  customerLabel,
+  cart,
+  subtotal,
+  discountAmount,
+  total,
+  payments,
+  change,
+}: {
+  result: PosSaleResult;
+  customerLabel: string;
+  cart: CartLine[];
+  subtotal: number;
+  discountAmount: number;
+  total: number;
+  payments: { cash: number; card: number; transfer: number; account: number };
+  change: number;
+}) {
+  const saleNumber = result.sale.id.slice(-6).toUpperCase();
+  const invoiceLabel = result.invoice
+    ? `Factura ${result.invoice.type}${result.invoice.number ? ` Nº ${result.invoice.number}` : ""}`
+    : "Remito interno";
+
+  return (
+    <section className="pos-print-document hidden print:block bg-white text-black font-sans text-[11px] leading-tight">
+      <div className="mx-auto w-[190mm] p-2">
+        <header className="grid grid-cols-[1fr_26mm_1fr] border border-black">
+          <div className="p-3">
+            <h2 className="text-[16px] font-bold uppercase tracking-wide">Ferretería del Norte</h2>
+            <p className="mt-1 text-[10px]">ERP · Mostrador / POS</p>
+            <p className="text-[10px]">Condición IVA: Responsable Inscripto</p>
+          </div>
+          <div className="flex items-start justify-center border-x border-black pt-2">
+            <div className="flex h-10 w-10 items-center justify-center border border-black text-xl font-bold">X</div>
+          </div>
+          <div className="p-3 text-right">
+            <p className="text-[15px] font-bold uppercase">Remito</p>
+            <p className="text-[10px]">{invoiceLabel}</p>
+            <p className="mt-2 font-semibold">Venta Nº {saleNumber}</p>
+            <p>{new Date(result.sale.createdAt).toLocaleString("es-AR")}</p>
+          </div>
+        </header>
+
+        <section className="mt-2 grid grid-cols-2 gap-2 border border-black p-2">
+          <div>
+            <p className="text-[9px] uppercase tracking-wide text-gray-600">Cliente</p>
+            <p className="font-semibold">{customerLabel}</p>
+          </div>
+          <div>
+            <p className="text-[9px] uppercase tracking-wide text-gray-600">Operación</p>
+            <p>Venta de mostrador · Entrega inmediata</p>
+          </div>
+        </section>
+
+        <table className="mt-2 w-full border-collapse text-[10px]">
+          <thead>
+            <tr className="bg-gray-100">
+              <th className="border border-black px-1 py-1 text-left font-semibold">Código</th>
+              <th className="border border-black px-1 py-1 text-left font-semibold">Descripción</th>
+              <th className="border border-black px-1 py-1 text-right font-semibold">Cant.</th>
+              <th className="border border-black px-1 py-1 text-right font-semibold">P. Unit.</th>
+              <th className="border border-black px-1 py-1 text-right font-semibold">Desc.</th>
+              <th className="border border-black px-1 py-1 text-right font-semibold">Importe</th>
+            </tr>
+          </thead>
+          <tbody>
+            {cart.map((line, index) => (
+              <tr key={`${line.productId}-${index}`}>
+                <td className="border border-black px-1 py-1 font-mono">{line.sku}</td>
+                <td className="border border-black px-1 py-1">{line.name}</td>
+                <td className="border border-black px-1 py-1 text-right tabular-nums">{line.quantity}</td>
+                <td className="border border-black px-1 py-1 text-right tabular-nums">{fmtAR(line.unitPrice)}</td>
+                <td className="border border-black px-1 py-1 text-right tabular-nums">{line.discount ? `${line.discount}%` : "—"}</td>
+                <td className="border border-black px-1 py-1 text-right tabular-nums">{fmtAR(lineSubtotal(line))}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        <section className="mt-2 grid grid-cols-[1fr_58mm] gap-3">
+          <div className="border border-black p-2 text-[10px]">
+            <p className="font-semibold uppercase">Forma de pago</p>
+            <div className="mt-1 grid grid-cols-2 gap-x-4 gap-y-0.5">
+              {payments.cash > 0 && <PaymentRow label="Efectivo" value={payments.cash} />}
+              {payments.card > 0 && <PaymentRow label="Tarjeta" value={payments.card} />}
+              {payments.transfer > 0 && <PaymentRow label="Transferencia" value={payments.transfer} />}
+              {payments.account > 0 && <PaymentRow label="Cuenta corriente" value={payments.account} />}
+              {change > 0 && <PaymentRow label="Vuelto" value={change} />}
+            </div>
+            {result.invoice?.cae && (
+              <p className="mt-2 text-[9px]">CAE: {result.invoice.cae}</p>
+            )}
+          </div>
+
+          <div className="border border-black text-[10px]">
+            <SummaryRow label="Subtotal" value={subtotal} />
+            {discountAmount > 0 && <SummaryRow label="Descuento" value={-discountAmount} />}
+            <div className="flex justify-between border-t border-black px-2 py-1.5 text-[13px] font-bold">
+              <span>Total</span>
+              <span className="tabular-nums">{fmtAR(total)}</span>
+            </div>
+          </div>
+        </section>
+
+        <footer className="mt-8 grid grid-cols-2 gap-8 text-[10px]">
+          <div className="border-t border-black pt-1 text-center">Firma / aclaración cliente</div>
+          <div className="border-t border-black pt-1 text-center">Entregado por</div>
+        </footer>
+      </div>
+    </section>
+  );
+}
+
+function PaymentRow({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="flex justify-between gap-2">
+      <span>{label}</span>
+      <span className="tabular-nums">{fmtAR(value)}</span>
+    </div>
+  );
+}
+
+function SummaryRow({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="flex justify-between px-2 py-1">
+      <span>{label}</span>
+      <span className="tabular-nums">{fmtAR(value)}</span>
     </div>
   );
 }
