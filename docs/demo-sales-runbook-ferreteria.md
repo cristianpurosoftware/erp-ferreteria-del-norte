@@ -42,6 +42,7 @@ SKU de referencia:
 - `147001` — Cemento de Contacto Fanacola 90 x 40 Grs — precio demo ARS 8.150 — stock seed objetivo: 36 unidades por depósito.
 - Antes de una llamada, validar por API/browser que estos SKUs siguen visibles en el ambiente que se va a mostrar. El seed Ferretería fuerza stock suficiente para estos tres SKUs cuando crea filas nuevas.
 - Verificación dev 2026-05-04: los 3 SKUs responden por API dev, tienen 3 listas de precio activas (General, Mayorista y USD) y stock disponible agregado suficiente: `108050` 40 unidades, `131009` 42 unidades y `147001` 238 unidades.
+- Smoke POS dev 2026-05-04: se completó una venta write-safe sólo en API dev con `108050` x1, pago efectivo ARS 170, comprobante asociado y lectura posterior de `/pos/today`. El stock del depósito usado bajó de 30 a 29 unidades, confirmando el hilo venta → comprobante → stock. No repetir en producción sin aprobación.
 
 Qué decir:
 - “El mostrador está optimizado para velocidad: buscar, cobrar e imprimir. Lo fiscal está simulado en demo; en cliente real se conecta el certificado/servicio correspondiente.”
@@ -100,7 +101,7 @@ Qué decir:
 
 ## Gaps detectados / próximos ajustes
 
-1. **SKU garantizado para walkthrough**: registrar 2–3 SKUs estables, con nombre, precio y stock suficiente, para no improvisar durante la demo.
+1. **E2E POS en dev**: ya hay smoke API write-safe de venta `108050` x1 con stock posterior verificado; falta confirmar visualmente en navegador que el remito/factura imprimible A4 se ve correcto antes/después de imprimir.
 2. **Seed Ferretería**: el repo tiene `npm run seed:ferreteria` y `npm run seed:ferreteria:prod`; documentar cuándo usar cada uno y validar si conviene conectarlo al seed principal o mantenerlo explícito.
 3. **Navegación demo reducida**: scope versionado en frontend para `NEXT_PUBLIC_DEMO_SCOPE=ferreteria-demo`; mantenerlo cubierto con `npm run test:demo-scope` y configurarlo en el ambiente dev antes de una llamada.
 4. **Docs compartibles**: separar este runbook comercial de handoffs internos que puedan contener URLs de infraestructura, usuarios o credenciales.
