@@ -70,10 +70,11 @@ Qué decir:
 
 Qué mostrar:
 - Comprobante generado por la venta.
+- Remito/factura imprimible en formato A4 desde el cierre del POS.
 - Aclaración visible/verbal de CAE simulado en demo.
 
 Qué decir:
-- “En demo usamos CAE simulado. En producción se configura fiscalmente con el cliente.”
+- “En demo usamos CAE simulado. En producción se configura fiscalmente con el cliente. El punto clave comercial es que el mostrador termina con un comprobante imprimible y trazable.”
 
 ### 6. Reportes — cierre comercial
 
