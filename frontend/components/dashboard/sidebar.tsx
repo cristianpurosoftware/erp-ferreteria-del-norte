@@ -121,6 +121,7 @@ const isFerreteriaDemoScope = FERRETERIA_DEMO_SCOPES.has(DEMO_SCOPE.toLowerCase(
 
 const FERRETERIA_DEMO_ALLOWED_HREFS = new Set([
   "/pos",
+  "/pos/ventas",
   "/dashboard",
   "/catalogo",
   "/stock/niveles",
@@ -136,6 +137,7 @@ const FERRETERIA_DEMO_ALLOWED_HREFS = new Set([
 
 const FERRETERIA_DEMO_NAV_LABEL_OVERRIDES: Record<string, string> = {
   "/pos": "Mostrador / POS",
+  "/pos/ventas": "Ventas POS",
   "/comprobantes": "Facturación",
 };
 
@@ -184,7 +186,8 @@ export const NAV_GROUPS: NavGroup[] = [
     label: "Operaciones",
     defaultOpen: true,
     items: [
-      { title: "Mostrador", icon: ScanLine, href: "/pos" },
+      { title: "Mostrador", icon: ScanLine, href: "/pos", exact: true },
+      { title: "Ventas POS", icon: Receipt, href: "/pos/ventas" },
       { title: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
       { title: "Pedidos", icon: ShoppingCart, href: "/pedidos" },
       { title: "Catálogo", icon: Package, href: "/catalogo" },

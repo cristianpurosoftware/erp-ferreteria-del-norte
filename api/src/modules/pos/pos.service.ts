@@ -18,6 +18,77 @@ const repo = AppDataSource.getRepository(PosSaleEntity);
 
 const CONSUMIDOR_FINAL_TAX_ID = 'CF-00000000';
 
+const POS_SALE_SELECT = `
+  SELECT
+    s.id::text AS id,
+    s.customer_id AS "customerId",
+    s.order_id AS "orderId",
+    s.invoice_id AS "invoiceId",
+    s.warehouse_id AS "warehouseId",
+    s.user_id AS "userId",
+    s.subtotal::float AS subtotal,
+    s.discount::float AS discount,
+    s.taxes::float AS taxes,
+    s.total::float AS total,
+    s.payment_breakdown AS "paymentBreakdown",
+    s.status AS status,
+    s.created_at AS "createdAt",
+    s.updated_at AS "updatedAt",
+    s.deleted_at AS "deletedAt",
+    s.metadata AS metadata,
+    o.number AS "orderNumber",
+    COALESCE(c.commercial_name, c.legal_name, 'Consumidor Final') AS "customerName",
+    i.number AS "invoiceNumber",
+    i.invoice_type AS "invoiceType",
+    i.sales_point AS "salesPoint",
+    i.status AS "invoiceStatus",
+    i.cae AS cae,
+    i.cae_expiration AS "caeExpiration"
+  FROM pos_sales s
+  LEFT JOIN orders o ON o.id = s.order_id
+  LEFT JOIN customers c ON c.id = COALESCE(s.customer_id, o.customer_id)
+  LEFT JOIN invoices i ON i.id = s.invoice_id
+`;
+
+async function hydrateSale(sale: PosSaleEntity) {
+  const invoice = sale.invoiceId ? await findInvoiceById(sale.invoiceId) : null;
+  const [order] = await AppDataSource.query(
+    `SELECT
+       o.id::text AS id,
+       o.number AS number,
+       o.customer_id AS "customerId",
+       o.subtotal::float AS subtotal,
+       o.discounts::float AS discounts,
+       o.taxes::float AS taxes,
+       o.total::float AS total,
+       COALESCE(c.commercial_name, c.legal_name, 'Consumidor Final') AS "customerName"
+     FROM orders o
+     LEFT JOIN customers c ON c.id = o.customer_id
+     WHERE o.id = $1
+     LIMIT 1`,
+    [sale.orderId],
+  );
+  const items = await AppDataSource.query(
+    `SELECT
+       oi.id::text AS id,
+       oi.product_id AS "productId",
+       COALESCE(p.sku, '') AS sku,
+       COALESCE(p.name, oi.product_id) AS name,
+       oi.quantity::float AS quantity,
+       oi.unit_price::float AS "unitPrice",
+       oi.discount::float AS discount,
+       oi.tax::float AS tax,
+       oi.subtotal::float AS subtotal
+     FROM order_items oi
+     LEFT JOIN products p ON p.id = oi.product_id
+     WHERE oi.order_id = $1
+     ORDER BY oi.created_at ASC`,
+    [sale.orderId],
+  );
+
+  return { sale, invoice, order: order ?? null, items };
+}
+
 // Lazily creates (or fetches) the canonical "Consumidor Final" customer used
 // when a POS sale has no nominated customer. The orders table requires
 // customer_id NOT NULL, so we always need a real customer row.
@@ -45,24 +116,25 @@ async function getOrCreateConsumidorFinalId(): Promise<string> {
 /**
  * Returns today's sales for the calling cashier, ordered newest first.
  */
-export async function listToday(userId: string) {
-  const startOfDay = new Date();
-  startOfDay.setHours(0, 0, 0, 0);
-
-  const items = await repo
-    .createQueryBuilder('s')
-    .where('s.user_id = :userId', { userId })
-    .andWhere('s.created_at >= :startOfDay', { startOfDay })
-    .orderBy('s.created_at', 'DESC')
-    .getMany();
-
-  return items;
+export async function listRecent(limit = 100) {
+  return AppDataSource.query(`${POS_SALE_SELECT} ORDER BY s.created_at DESC LIMIT $1`, [limit]);
 }
 
-export async function getOne(id: string) {
+export async function listToday(_userId: string) {
+  const startOfDay = new Date();
+  startOfDay.setHours(0, 0, 0, 0);
+  return AppDataSource.query(`${POS_SALE_SELECT} WHERE s.created_at >= $1 ORDER BY s.created_at DESC`, [startOfDay]);
+}
+
+async function getSaleEntity(id: string) {
   const sale = await repo.findOne({ where: { id } });
   if (!sale) throw new NotFoundError('Venta POS no encontrada');
   return sale;
+}
+
+export async function getOne(id: string) {
+  const sale = await getSaleEntity(id);
+  return hydrateSale(sale);
 }
 
 /**
@@ -254,7 +326,7 @@ export async function createSale(data: CreatePosSaleInput, userId: string) {
  * deferred — the stub is enough for the demo.
  */
 export async function voidSale(id: string, userId: string) {
-  const sale = await getOne(id);
+  const sale = await getSaleEntity(id);
 
   if (sale.status === 'voided') {
     throw new BusinessLogicError('ALREADY_VOIDED', 'Esta venta ya fue anulada');

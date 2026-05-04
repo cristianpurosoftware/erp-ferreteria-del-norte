@@ -41,6 +41,14 @@ export async function createPosSale(
   }
 }
 
-export async function getTodayPosSales(): Promise<posApi.PosSaleResult["sale"][]> {
+export async function getRecentPosSales(limit = 100): Promise<posApi.PosSaleListItem[]> {
+  return posApi.listRecent(limit);
+}
+
+export async function getPosSaleById(id: string): Promise<posApi.PosSaleResult> {
+  return posApi.getById(id);
+}
+
+export async function getTodayPosSales(): Promise<posApi.PosSaleListItem[]> {
   return posApi.getToday();
 }

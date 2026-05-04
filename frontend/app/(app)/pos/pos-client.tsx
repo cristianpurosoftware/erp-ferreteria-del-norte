@@ -13,7 +13,8 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { findProductBySku, createPosSale } from "@/lib/actions/pos";
-import type { CreatePosSaleInput, PosSaleResult } from "@/lib/api/endpoints/pos";
+import type { CreatePosSaleInput, PosSaleLine, PosSaleResult } from "@/lib/api/endpoints/pos";
+import { PosSalePrintDocument } from "@/components/pos/pos-sale-print-document";
 
 // ─── Local shapes ──────────────────────────────────────────
 interface WarehouseOpt { id: string; name: string; }
@@ -459,15 +460,20 @@ export function PosClient({ warehouses, customers }: PosClientProps) {
 
       {/* ─── Print-only remito/factura layout ──────────────── */}
       {ticket && (
-        <PosPrintRemito
+        <PosSalePrintDocument
           result={ticket}
           customerLabel={customer?.label ?? "Consumidor Final"}
-          cart={cart}
-          subtotal={subtotal}
-          discountAmount={discountAmount}
-          total={total}
-          payments={pay}
-          change={change}
+          lines={cart.map((line, index): PosSaleLine => ({
+            id: `${line.productId}-${index}`,
+            productId: line.productId,
+            sku: line.sku,
+            name: line.name,
+            quantity: line.quantity,
+            unitPrice: line.unitPrice,
+            discount: line.discount > 0 ? line.unitPrice * line.quantity * (line.discount / 100) : 0,
+            tax: 0,
+            subtotal: lineSubtotal(line),
+          }))}
         />
       )}
     </>
@@ -545,9 +551,14 @@ function TicketBody({
           <span className="tabular-nums">{fmtAR(change)}</span>
         </div>
       )}
-      {result.invoice?.cae && (
-        <div className="mt-2 text-[11px] text-muted-foreground">
-          Factura {result.invoice.type} {result.invoice.number ? `#${result.invoice.number}` : ""} · CAE {result.invoice.cae}
+      {result.invoice && (
+        <div className="mt-2 rounded-md border bg-muted/40 p-2 text-[11px]">
+          <div className="font-medium text-foreground">
+            Comprobante: Factura {result.invoice.type} {result.invoice.number ? `Nº ${result.invoice.number}` : "sin número asignado"}
+          </div>
+          <div className="text-muted-foreground">
+            Venta POS #{result.sale.id.slice(-6).toUpperCase()}{result.invoice.cae ? ` · CAE ${result.invoice.cae}` : ""}
+          </div>
         </div>
       )}
     </div>

@@ -14,6 +14,12 @@ export async function voidSale(req: Request, res: Response) {
   return successResponse(res, sale);
 }
 
+export async function listRecent(req: Request, res: Response) {
+  const limit = Math.min(Number(req.query.limit ?? 100) || 100, 250);
+  const items = await service.listRecent(limit);
+  return successResponse(res, items);
+}
+
 export async function getById(req: Request, res: Response) {
   const sale = await service.getOne(req.params.id);
   return successResponse(res, sale);

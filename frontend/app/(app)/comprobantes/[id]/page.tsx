@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import type { InvoiceStatus } from "@/lib/types";
 import { INVOICE_TYPE_LABELS } from "@/lib/types";
 import { RequestCaeButton } from "@/components/invoices/request-cae-button";
+import { PrintInvoiceButton } from "@/components/invoices/print-invoice-button";
 
 const statusConfig: Record<InvoiceStatus, { label: string; color: string; bgColor: string }> = {
   draft: { label: "Borrador", color: "text-gray-500", bgColor: "bg-gray-500/10" },
@@ -57,7 +58,7 @@ export default async function ComprobanteDetallePage({ params }: { params: Promi
             <div className="flex items-center gap-3">
               <h1 className="text-xl font-semibold flex items-center gap-2">
                 <FileText className="size-5 text-p3" />
-                Comprobante {invoice.number ?? invoice.id.slice(0, 8)}
+                Comprobante {invoice.number ? `Nº ${invoice.number}` : invoice.id.slice(0, 8)}
               </h1>
               <span className={cn("text-xs px-2.5 py-1 rounded-full font-medium", st.bgColor, st.color)}>
                 {st.label}
@@ -67,6 +68,7 @@ export default async function ComprobanteDetallePage({ params }: { params: Promi
               {invoice.issueDate ? formatDate(invoice.issueDate) : "Sin fecha de emisión"}
             </p>
           </div>
+          <PrintInvoiceButton />
           {invoice.status === "pending_issue" && !invoice.cae && (
             <RequestCaeButton invoiceId={invoice.id} />
           )}

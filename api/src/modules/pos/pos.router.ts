@@ -9,6 +9,7 @@ const router = Router();
 
 // /pos/today must come before /pos/:id to avoid ":id" swallowing the literal
 router.get('/today', requirePermission(PERMISSIONS.POS.READ), controller.listToday);
+router.get('/', requirePermission(PERMISSIONS.POS.READ), controller.listRecent);
 router.get('/:id', requirePermission(PERMISSIONS.POS.READ), controller.getById);
 router.post('/', requirePermission(PERMISSIONS.POS.CREATE), validateBody(CreatePosSaleSchema), controller.createSale);
 router.post('/:id/void', requirePermission(PERMISSIONS.POS.VOID), controller.voidSale);
