@@ -41,6 +41,7 @@ SKU de referencia:
 - `131009` — Taladro Percutor 13 mm - HP1630 - 710w — precio demo ARS 246.500 — stock seed objetivo: 12 unidades por depósito.
 - `147001` — Cemento de Contacto Fanacola 90 x 40 Grs — precio demo ARS 8.150 — stock seed objetivo: 36 unidades por depósito.
 - Antes de una llamada, validar por API/browser que estos SKUs siguen visibles en el ambiente que se va a mostrar. El seed Ferretería fuerza stock suficiente para estos tres SKUs cuando crea filas nuevas.
+- Verificación dev 2026-05-04: los 3 SKUs responden por API dev, tienen 3 listas de precio activas (General, Mayorista y USD) y stock disponible agregado suficiente: `108050` 40 unidades, `131009` 42 unidades y `147001` 238 unidades.
 
 Qué decir:
 - “El mostrador está optimizado para velocidad: buscar, cobrar e imprimir. Lo fiscal está simulado en demo; en cliente real se conecta el certificado/servicio correspondiente.”
