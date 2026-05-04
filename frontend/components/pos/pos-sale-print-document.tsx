@@ -31,6 +31,12 @@ function paymentLabel(method: string) {
   return labels[method] ?? method;
 }
 
+function invoiceLabel(invoice: NonNullable<PosSaleResult["invoice"]>) {
+  const type = invoice.type ?? invoice.invoiceType;
+  const typeLabel = type ? `Factura ${type}` : "Factura";
+  return invoice.number ? `${typeLabel} Nº ${invoice.number}` : `${typeLabel} sin número asignado`;
+}
+
 interface PosSalePrintDocumentProps {
   result: PosSaleResult;
   customerLabel?: string;
@@ -41,8 +47,8 @@ interface PosSalePrintDocumentProps {
 export function PosSalePrintDocument({ result, customerLabel, lines, className }: PosSalePrintDocumentProps) {
   const saleNumber = result.sale.id.slice(-6).toUpperCase();
   const displayCustomer = customerLabel ?? result.order?.customerName ?? "Consumidor Final";
-  const invoiceLabel = result.invoice
-    ? `Factura ${result.invoice.type}${result.invoice.number ? ` Nº ${result.invoice.number}` : ""}`
+  const displayInvoiceLabel = result.invoice
+    ? invoiceLabel(result.invoice).replace(" sin número asignado", "")
     : "Remito interno";
   const invoiceNumber = result.invoice?.number ?? "Sin asignar";
   const printableLines = lines ?? result.items ?? [];
@@ -66,7 +72,7 @@ export function PosSalePrintDocument({ result, customerLabel, lines, className }
           </div>
           <div className="p-3 text-right">
             <p className="text-[15px] font-bold uppercase">Remito / Comprobante</p>
-            <p className="text-[10px]">{invoiceLabel}</p>
+            <p className="text-[10px]">{displayInvoiceLabel}</p>
             <p className="mt-2 font-semibold">Comprobante Nº {invoiceNumber}</p>
             <p className="font-semibold">Venta POS Nº {saleNumber}</p>
             <p>{new Date(result.sale.createdAt).toLocaleString("es-AR")}</p>

@@ -88,7 +88,8 @@ export interface PosSaleResult {
   invoice?: {
     id: string;
     number: string | null;
-    type: string;
+    type?: string | null;
+    invoiceType?: string | null;
     status: string;
     total: number;
     cae: string | null;

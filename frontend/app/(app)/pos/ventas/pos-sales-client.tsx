@@ -30,6 +30,12 @@ function invoiceLabel(sale: PosSaleListItem) {
   return sale.invoiceNumber ? `${type} Nº ${sale.invoiceNumber}` : `${type} sin N°`;
 }
 
+function selectedInvoiceLabel(invoice: NonNullable<PosSaleResult["invoice"]>) {
+  const type = invoice.type ?? invoice.invoiceType;
+  const typeLabel = type ? `Factura ${type}` : "Factura";
+  return invoice.number ? `${typeLabel} Nº ${invoice.number}` : `${typeLabel} sin N°`;
+}
+
 export function PosSalesClient({ initialSales }: { initialSales: PosSaleListItem[] }) {
   const [sales, setSales] = React.useState(initialSales);
   const [selected, setSelected] = React.useState<PosSaleResult | null>(null);
@@ -178,7 +184,7 @@ export function PosSalesClient({ initialSales }: { initialSales: PosSaleListItem
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Comprobante</span>
                   <span className="font-medium">
-                    {selected.invoice ? `Factura ${selected.invoice.type} ${selected.invoice.number ? `Nº ${selected.invoice.number}` : "sin N°"}` : "Remito interno"}
+                    {selected.invoice ? selectedInvoiceLabel(selected.invoice) : "Remito interno"}
                   </span>
                 </div>
                 <div className="flex justify-between">

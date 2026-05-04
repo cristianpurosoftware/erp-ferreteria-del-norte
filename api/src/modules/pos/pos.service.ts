@@ -18,6 +18,16 @@ const repo = AppDataSource.getRepository(PosSaleEntity);
 
 const CONSUMIDOR_FINAL_TAX_ID = 'CF-00000000';
 
+type PosInvoice = Awaited<ReturnType<typeof findInvoiceById>>;
+
+function presentPosInvoice(invoice: PosInvoice | null) {
+  if (!invoice) return null;
+  return {
+    ...invoice,
+    type: invoice.invoiceType,
+  };
+}
+
 const POS_SALE_SELECT = `
   SELECT
     s.id::text AS id,
@@ -86,7 +96,7 @@ async function hydrateSale(sale: PosSaleEntity) {
     [sale.orderId],
   );
 
-  return { sale, invoice, order: order ?? null, items };
+  return { sale, invoice: presentPosInvoice(invoice), order: order ?? null, items };
 }
 
 // Lazily creates (or fetches) the canonical "Consumidor Final" customer used
@@ -315,9 +325,9 @@ export async function createSale(data: CreatePosSaleInput, userId: string) {
     paymentMethods: data.payments.map((p) => p.method),
   });
 
-  eventBus.emit(PosEvents.COMPLETED, { sale, invoice: issuedInvoice, payments: savedPayments });
+  eventBus.emit(PosEvents.COMPLETED, { sale, invoice: presentPosInvoice(issuedInvoice), payments: savedPayments });
 
-  return { sale, invoice: issuedInvoice };
+  return { sale, invoice: presentPosInvoice(issuedInvoice) };
 }
 
 /**

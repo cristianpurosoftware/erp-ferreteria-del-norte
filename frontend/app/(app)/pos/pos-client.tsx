@@ -514,6 +514,12 @@ function PayInput({
   );
 }
 
+function invoiceLabel(invoice: NonNullable<PosSaleResult["invoice"]>) {
+  const type = invoice.type ?? invoice.invoiceType;
+  const typeLabel = type ? `Factura ${type}` : "Factura";
+  return invoice.number ? `${typeLabel} Nº ${invoice.number}` : `${typeLabel} sin número asignado`;
+}
+
 function TicketBody({
   result,
   customerLabel,
@@ -554,7 +560,7 @@ function TicketBody({
       {result.invoice && (
         <div className="mt-2 rounded-md border bg-muted/40 p-2 text-[11px]">
           <div className="font-medium text-foreground">
-            Comprobante: Factura {result.invoice.type} {result.invoice.number ? `Nº ${result.invoice.number}` : "sin número asignado"}
+            Comprobante: {invoiceLabel(result.invoice)}
           </div>
           <div className="text-muted-foreground">
             Venta POS #{result.sale.id.slice(-6).toUpperCase()}{result.invoice.cae ? ` · CAE ${result.invoice.cae}` : ""}
@@ -585,8 +591,8 @@ function PosPrintRemito({
   change: number;
 }) {
   const saleNumber = result.sale.id.slice(-6).toUpperCase();
-  const invoiceLabel = result.invoice
-    ? `Factura ${result.invoice.type}${result.invoice.number ? ` Nº ${result.invoice.number}` : ""}`
+  const displayInvoiceLabel = result.invoice
+    ? invoiceLabel(result.invoice).replace(" sin número asignado", "")
     : "Remito interno";
 
   return (
@@ -603,7 +609,7 @@ function PosPrintRemito({
           </div>
           <div className="p-3 text-right">
             <p className="text-[15px] font-bold uppercase">Remito</p>
-            <p className="text-[10px]">{invoiceLabel}</p>
+            <p className="text-[10px]">{displayInvoiceLabel}</p>
             <p className="mt-2 font-semibold">Venta Nº {saleNumber}</p>
             <p>{new Date(result.sale.createdAt).toLocaleString("es-AR")}</p>
           </div>
