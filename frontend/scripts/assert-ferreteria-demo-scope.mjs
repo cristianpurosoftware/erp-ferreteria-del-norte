@@ -20,7 +20,7 @@ const requiredHrefs = [
   '/pos',
   '/dashboard',
   '/catalogo',
-  '/stock/niveles',
+  '/stock/cantidades',
   '/stock/movimientos',
   '/caja',
   '/clientes',

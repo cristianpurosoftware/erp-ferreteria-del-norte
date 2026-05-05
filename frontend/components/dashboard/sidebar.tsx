@@ -124,7 +124,7 @@ const FERRETERIA_DEMO_ALLOWED_HREFS = new Set([
   "/pos/ventas",
   "/dashboard",
   "/catalogo",
-  "/stock/niveles",
+  "/stock/cantidades",
   "/stock/movimientos",
   "/caja",
   "/clientes",
@@ -195,7 +195,7 @@ export const NAV_GROUPS: NavGroup[] = [
         title: "Stock",
         icon: Warehouse,
         children: [
-          { title: "Niveles", icon: BarChart3, href: "/stock/niveles" },
+          { title: "Cantidades", icon: BarChart3, href: "/stock/cantidades" },
           { title: "Lotes", icon: Package, href: "/stock/lotes" },
           { title: "Ubicaciones", icon: MapPin, href: "/stock/ubicaciones" },
           { title: "Vencimientos", icon: Receipt, href: "/stock/vencimientos" },

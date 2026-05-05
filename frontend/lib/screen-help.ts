@@ -91,7 +91,7 @@ export const SCREEN_HELP = {
     "Saldo actual de cada cliente con límite de crédito, % usado y antigüedad (aging) de la deuda.",
   "cobranzas/pagos-registrados":
     "Listado de pagos recibidos con medio de cobro, monto, fecha y cliente asociado.",
-  "stock/niveles":
+  "stock/cantidades":
     "Disponibilidad real de cada producto por depósito: disponible, reservado, en tránsito y mínimo.",
   "stock/lotes":
     "Lotes con vencimiento por producto. Estado: activo, bloqueado, vencido o consumido.",

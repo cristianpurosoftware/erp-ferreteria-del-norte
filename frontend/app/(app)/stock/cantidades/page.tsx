@@ -28,7 +28,7 @@ function formatQty(n: number): string {
 
 type StockRow = Stock & { levelKind: "ok" | "low" | "out" };
 
-export default function NivelesPage() {
+export default function CantidadesPage() {
   const [loading, setLoading] = React.useState(true);
   const [stockItems, setStockItems] = React.useState<Stock[]>([]);
 
@@ -115,14 +115,14 @@ export default function NivelesPage() {
       {
         id: "levelKind",
         accessorKey: "levelKind",
-        header: "Nivel",
+        header: "Estado",
         cell: ({ row }) => {
           const kind = row.original.levelKind;
           const color = kind === "out" ? "bg-red-500/10 text-red-600" : kind === "low" ? "bg-yellow-500/10 text-yellow-600" : "bg-p3/10 text-p3";
           const label = kind === "out" ? "Sin stock" : kind === "low" ? "Bajo" : "Normal";
           return <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", color)}>{label}</span>;
         },
-        meta: { label: "Nivel", variant: "multiSelect", options: STOCK_LEVEL_OPTIONS, icon: Tag },
+        meta: { label: "Estado", variant: "multiSelect", options: STOCK_LEVEL_OPTIONS, icon: Tag },
         enableColumnFilter: true,
         filterFn: multiSelectFilterFn,
       },
@@ -158,17 +158,17 @@ export default function NivelesPage() {
         <div>
           <h1 className="text-xl sm:text-2xl font-semibold flex items-center gap-2">
             <WarehouseIcon className="size-6 text-p3" />
-            Niveles
-            <PageHelpTooltip content={SCREEN_HELP["stock/niveles"]} />
+            Cantidades
+            <PageHelpTooltip content={SCREEN_HELP["stock/cantidades"]} />
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">{stockItems.length} filas (producto × depósito)</p>
         </div>
 
         <ERPDataTable table={table} loading={loading} skeletonColumnCount={7}>
           <ExportButton
-            headers={["Producto", "Depósito", "Disponible", "Reservado", "En tránsito", "Mínimo", "Nivel"]}
+            headers={["Producto", "Depósito", "Disponible", "Reservado", "En tránsito", "Mínimo", "Estado"]}
             {...exportRows}
-            filename="stock-niveles"
+            filename="stock-cantidades"
           />
         </ERPDataTable>
       </div>

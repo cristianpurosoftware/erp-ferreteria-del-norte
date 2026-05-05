@@ -25,7 +25,7 @@ export async function createPosSale(
   try {
     const result = await posApi.createSale(input);
     revalidatePath("/pos");
-    revalidatePath("/stock/niveles");
+    revalidatePath("/stock/cantidades");
     revalidatePath("/comprobantes");
     return { ok: true, result };
   } catch (err) {
