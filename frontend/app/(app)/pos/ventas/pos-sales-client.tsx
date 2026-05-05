@@ -154,9 +154,19 @@ export function PosSalesClient({ initialSales }: { initialSales: PosSaleListItem
                             {busy ? <Loader2 className="size-3.5 animate-spin" /> : <Eye className="size-3.5" />}
                             <span className="ml-1">Ver</span>
                           </Button>
-                          <Button size="sm" disabled={busy} onClick={() => openSale(sale.id, true)}>
+                          <Button
+                            size="sm"
+                            disabled={busy}
+                            onClick={() => {
+                              if (sale.invoiceId) {
+                                window.open(`/imprimir/comprobante/${sale.invoiceId}`, "_blank", "noopener,noreferrer");
+                                return;
+                              }
+                              void openSale(sale.id, true);
+                            }}
+                          >
                             {busy ? <Loader2 className="size-3.5 animate-spin" /> : <Printer className="size-3.5" />}
-                            <span className="ml-1">Reimprimir</span>
+                            <span className="ml-1">Reimprimir PDF</span>
                           </Button>
                         </div>
                       </td>
@@ -209,8 +219,16 @@ export function PosSalesClient({ initialSales }: { initialSales: PosSaleListItem
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setSelected(null)}>Cerrar</Button>
-            <Button onClick={() => window.print()}>
-              <RotateCcw className="size-4 mr-2" /> Reimprimir
+            <Button
+              onClick={() => {
+                if (selected?.invoice?.id) {
+                  window.open(`/imprimir/comprobante/${selected.invoice.id}`, "_blank", "noopener,noreferrer");
+                  return;
+                }
+                window.print();
+              }}
+            >
+              <RotateCcw className="size-4 mr-2" /> Reimprimir PDF
             </Button>
           </DialogFooter>
         </DialogContent>

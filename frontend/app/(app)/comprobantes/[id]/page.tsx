@@ -68,7 +68,7 @@ export default async function ComprobanteDetallePage({ params }: { params: Promi
               {invoice.issueDate ? formatDate(invoice.issueDate) : "Sin fecha de emisión"}
             </p>
           </div>
-          <PrintInvoiceButton />
+          <PrintInvoiceButton invoiceId={invoice.id} />
           {invoice.status === "pending_issue" && !invoice.cae && (
             <RequestCaeButton invoiceId={invoice.id} />
           )}

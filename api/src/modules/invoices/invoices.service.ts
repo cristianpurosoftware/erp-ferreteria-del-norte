@@ -1,5 +1,6 @@
 import { AppDataSource } from '../../config/data-source';
 import { InvoiceEntity } from './data_access/invoice.entity';
+import type { EntityManager } from 'typeorm';
 import { ListQuery, type ColumnMap, type SortableMap } from '../../common/list-query';
 import { NotFoundError } from '../../common/errors';
 import { assertTransition, TransitionMap } from '../../common/state-machine';
@@ -41,6 +42,56 @@ const INVOICE_SORTABLE: SortableMap = {
 };
 
 const INVOICE_SEARCH = ['i.number', 'i.notes', 'COALESCE(c.commercial_name, c.legal_name)'];
+const DEFAULT_INVOICE_TYPE = 'B';
+const DEFAULT_SALES_POINT = '0001';
+
+function normalizeInvoiceType(invoiceType?: string | null) {
+  return (invoiceType || DEFAULT_INVOICE_TYPE).trim().toUpperCase();
+}
+
+function normalizeSalesPoint(salesPoint?: string | number | null) {
+  const raw = String(salesPoint ?? DEFAULT_SALES_POINT).replace(/\D/g, '') || DEFAULT_SALES_POINT;
+  return raw.padStart(4, '0').slice(-4);
+}
+
+export function buildInvoiceNumber(invoiceType?: string | null, salesPoint?: string | number | null, sequence = 1) {
+  const type = normalizeInvoiceType(invoiceType);
+  const point = normalizeSalesPoint(salesPoint);
+  return `${type}-${point}-${String(sequence).padStart(8, '0')}`;
+}
+
+export function nextInvoiceSequenceFromNumbers(numbers: Array<string | null | undefined>, invoiceType?: string | null, salesPoint?: string | number | null) {
+  const type = normalizeInvoiceType(invoiceType);
+  const point = normalizeSalesPoint(salesPoint);
+  const prefix = `${type}-${point}-`;
+  const max = numbers.reduce((highest, number) => {
+    if (!number?.startsWith(prefix)) return highest;
+    const suffix = number.slice(prefix.length);
+    if (!/^\d+$/.test(suffix)) return highest;
+    return Math.max(highest, Number(suffix));
+  }, 0);
+  return max + 1;
+}
+
+async function assignInvoiceNumber(em: EntityManager, item: InvoiceEntity) {
+  if (item.number) return item;
+
+  item.invoiceType = normalizeInvoiceType(item.invoiceType);
+  item.salesPoint = normalizeSalesPoint(item.salesPoint);
+
+  await em.query('SELECT pg_advisory_xact_lock(hashtext($1))', [`invoice-number:${item.invoiceType}:${item.salesPoint}`]);
+  const rows = await em.query<Array<{ number: string | null }>>(
+    'SELECT number FROM invoices WHERE invoice_type = $1 AND sales_point = $2 AND deleted_at IS NULL',
+    [item.invoiceType, item.salesPoint],
+  );
+  item.number = buildInvoiceNumber(
+    item.invoiceType,
+    item.salesPoint,
+    nextInvoiceSequenceFromNumbers(rows.map((row) => row.number), item.invoiceType, item.salesPoint),
+  );
+
+  return item;
+}
 
 function buildInvoicesQB() {
   return repo.createQueryBuilder('i')
@@ -109,10 +160,14 @@ export async function findById(id: string) {
 }
 
 export async function create(data: Partial<InvoiceEntity>) {
-  const item = repo.create(data);
-  const saved = await repo.save(item);
+  const saved = await AppDataSource.manager.transaction(async (em) => {
+    const txRepo = em.getRepository(InvoiceEntity);
+    const item = txRepo.create(data);
+    await assignInvoiceNumber(em, item);
+    return txRepo.save(item);
+  });
   eventBus.emit(InvoiceEvents.CREATED, saved);
-  logger.info({ action: 'create', invoiceId: saved.id, customerId: saved.customerId, total: saved.total, invoiceType: saved.invoiceType }, 'Invoice created');
+  logger.info({ action: 'create', invoiceId: saved.id, customerId: saved.customerId, total: saved.total, invoiceType: saved.invoiceType, number: saved.number }, 'Invoice created');
   return saved;
 }
 
