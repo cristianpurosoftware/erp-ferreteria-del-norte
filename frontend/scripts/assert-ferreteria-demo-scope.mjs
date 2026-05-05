@@ -4,9 +4,15 @@ import path from 'node:path';
 const root = process.cwd();
 const sidebarPath = path.join(root, 'components/dashboard/sidebar.tsx');
 const navItemsPath = path.join(root, 'lib/command-palette/nav-items.ts');
+const customerPagePath = path.join(root, 'app/(app)/clientes/page.tsx');
+const customerFormPath = path.join(root, 'components/forms/customer-form.tsx');
+const ferreteriaSeedPath = path.join(root, '../api/src/seeds/ferreteria-del-norte-demo.seed.ts');
 
 const sidebarSource = fs.readFileSync(sidebarPath, 'utf8');
 const navItemsSource = fs.readFileSync(navItemsPath, 'utf8');
+const customerPageSource = fs.readFileSync(customerPagePath, 'utf8');
+const customerFormSource = fs.readFileSync(customerFormPath, 'utf8');
+const ferreteriaSeedSource = fs.readFileSync(ferreteriaSeedPath, 'utf8');
 
 const setMatch = sidebarSource.match(/const FERRETERIA_DEMO_ALLOWED_HREFS = new Set\(\[([\s\S]*?)\]\);/);
 if (!setMatch) {
@@ -90,6 +96,33 @@ if (!sidebarSource.includes('Mostrador / POS')) {
 }
 if (!sidebarSource.includes('Facturación')) {
   failures.push('Falta framing comercial Facturación para la demo.');
+}
+
+if (!customerPageSource.includes('hideDistributionFields={isFerreteriaDemoScope}')) {
+  failures.push('Clientes no pasa hideDistributionFields según scope ferretería.');
+}
+if (!customerPageSource.includes('!isFerreteriaDemoScope') || !customerPageSource.includes('id: "zoneId"') || !customerPageSource.includes('id: "routeId"')) {
+  failures.push('Clientes debe condicionar columnas/filtros Zona y Ruta fuera de scope ferretería.');
+}
+if (!customerFormSource.includes('hideDistributionFields?: boolean') || !customerFormSource.includes('!hideDistributionFields')) {
+  failures.push('CustomerForm no expone/usa hideDistributionFields para ocultar campos de distribución.');
+}
+for (const forbiddenField of ['Vendedor asignado', '<Label>Zona</Label>', '<Label>Ruta</Label>']) {
+  if (!customerFormSource.includes(forbiddenField)) {
+    failures.push(`CustomerForm perdió el campo distribuidora esperado para demos no ferretería: ${forbiddenField}`);
+  }
+}
+for (const strippedField of ['assignedSellerId', 'zoneId', 'routeId']) {
+  if (!customerFormSource.includes(strippedField)) {
+    failures.push(`CustomerForm no limpia campo distribuidora al operar en scope ferretería: ${strippedField}`);
+  }
+}
+const retailCustomerCount = (ferreteriaSeedSource.match(/taxId: '30-7191000|taxId: '20-27191004|taxId: '27-30191006/g) ?? []).length;
+if (retailCustomerCount < 6) {
+  failures.push(`Seed ferretería debe incluir al menos 6 clientes retail de ejemplo; encontrados: ${retailCustomerCount}`);
+}
+if (!ferreteriaSeedSource.includes('assignedSellerId: null') || !ferreteriaSeedSource.includes('zoneId: null') || !ferreteriaSeedSource.includes('routeId: null')) {
+  failures.push('Seed ferretería debe crear clientes retail sin vendedor, zona ni ruta de distribución.');
 }
 
 function routeHasPage(href) {
