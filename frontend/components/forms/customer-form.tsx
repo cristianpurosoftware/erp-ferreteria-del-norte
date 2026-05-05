@@ -20,6 +20,7 @@ interface CustomerFormProps {
   sellers?: Pick<User, "id" | "first_name" | "last_name">[];
   zones?: Pick<SalesZone, "id" | "code" | "name">[];
   routes?: Pick<Route, "id" | "code" | "name" | "zoneId">[];
+  hideDistributionFields?: boolean;
 }
 
 function FieldError({ message }: { message?: string }) {
@@ -75,6 +76,7 @@ export function CustomerForm({
   sellers = [],
   zones = [],
   routes = [],
+  hideDistributionFields = false,
 }: CustomerFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -88,6 +90,7 @@ export function CustomerForm({
     control,
     formState: { errors },
   } = useForm<CustomerFormValues>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: standardSchemaResolver(customerSchema) as any,
     defaultValues: getDefaultValues(customer),
   });
@@ -104,9 +107,11 @@ export function CustomerForm({
   const onSubmit = handleSubmit(async (raw) => {
     setLoading(true);
     // Limpiar strings vacíos de campos opcionales para evitar fallas de validación UUID
-    const data = Object.fromEntries(
-      Object.entries(raw).filter(([_, v]) => v !== "" && v !== undefined)
-    ) as typeof raw;
+    const cleanedEntries = Object.entries(raw).filter(([key, value]) => {
+      if (hideDistributionFields && ["assignedSellerId", "zoneId", "routeId"].includes(key)) return false;
+      return value !== "" && value !== undefined;
+    });
+    const data = Object.fromEntries(cleanedEntries) as typeof raw;
     try {
       if (isEdit && customer) {
         await updateCustomer(customer.id, data);
@@ -197,15 +202,17 @@ export function CustomerForm({
               <option value="Ecommerce">E-commerce</option>
             </select>
           </div>
-          <div>
-            <Label>Vendedor asignado</Label>
-            <select {...register("assignedSellerId")} className={selectCls()}>
-              <option value="">Sin asignar</option>
-              {sellers.map((s) => (
-                <option key={s.id} value={s.id}>{s.first_name} {s.last_name}</option>
-              ))}
-            </select>
-          </div>
+          {!hideDistributionFields && (
+            <div>
+              <Label>Vendedor asignado</Label>
+              <select {...register("assignedSellerId")} className={selectCls()}>
+                <option value="">Sin asignar</option>
+                {sellers.map((s) => (
+                  <option key={s.id} value={s.id}>{s.first_name} {s.last_name}</option>
+                ))}
+              </select>
+            </div>
+          )}
           <div>
             <Label>Límite de crédito</Label>
             <Input
@@ -245,28 +252,32 @@ export function CustomerForm({
                 <option value="blocked">Bloqueado</option>
               </select>
             </div>
-            <div>
-              <Label>Zona</Label>
-              <select {...register("zoneId")} className={selectCls()}>
-                <option value="">Sin zona</option>
-                {zones.map((z) => (
-                  <option key={z.id} value={z.id}>
-                    {z.code} — {z.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <Label>Ruta</Label>
-              <select {...register("routeId")} className={selectCls()}>
-                <option value="">Sin ruta</option>
-                {routesForZone.map((r) => (
-                  <option key={r.id} value={r.id}>
-                    {r.code} — {r.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {!hideDistributionFields && (
+              <>
+                <div>
+                  <Label>Zona</Label>
+                  <select {...register("zoneId")} className={selectCls()}>
+                    <option value="">Sin zona</option>
+                    {zones.map((z) => (
+                      <option key={z.id} value={z.id}>
+                        {z.code} — {z.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <Label>Ruta</Label>
+                  <select {...register("routeId")} className={selectCls()}>
+                    <option value="">Sin ruta</option>
+                    {routesForZone.map((r) => (
+                      <option key={r.id} value={r.id}>
+                        {r.code} — {r.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </>
+            )}
             <div className="col-span-2 flex items-start gap-2 pt-1">
               <Controller
                 control={control}

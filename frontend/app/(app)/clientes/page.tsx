@@ -14,9 +14,7 @@ import {
 import {
   Users,
   Plus,
-  User as UserIcon,
   Tag,
-  MapPin,
   DollarSign,
   ShieldCheck,
   MoreHorizontal,
@@ -79,6 +77,14 @@ const CATEGORY_OPTIONS = [
   { label: "Categoría C", value: "C" },
 ];
 
+const FERRETERIA_DEMO_SCOPES = new Set([
+  "ferreteria",
+  "ferreteria-demo",
+  "hardware-store",
+  "pos-demo",
+  "sales-demo",
+]);
+
 export default function ClientesPage() {
   const { can } = usePermissions();
   const [loading, setLoading] = React.useState(true);
@@ -109,10 +115,7 @@ export default function ClientesPage() {
     () => zones.map((z) => ({ label: z.code, value: z.id })),
     [zones],
   );
-  const routeOptions = React.useMemo(
-    () => routes.map((r) => ({ label: r.code, value: r.id })),
-    [routes],
-  );
+  const isFerreteriaDemoScope = FERRETERIA_DEMO_SCOPES.has((process.env.NEXT_PUBLIC_DEMO_SCOPE ?? "").toLowerCase());
 
   const columns = React.useMemo<ColumnDef<Customer>[]>(
     () => [
@@ -151,28 +154,6 @@ export default function ClientesPage() {
           ? <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-sky-500/10 text-sky-600 dark:text-sky-400">{row.original.category}</span>
           : <span className="text-xs text-muted-foreground">—</span>,
         meta: { label: "Categoría", variant: "multiSelect", options: CATEGORY_OPTIONS, icon: Tag },
-        enableColumnFilter: true,
-      },
-      {
-        id: "zoneId",
-        accessorKey: "zoneId",
-        header: "Zona",
-        cell: ({ row }) => {
-          const zone = row.original.zoneId ? zones.find((z) => z.id === row.original.zoneId) : null;
-          return <span className="text-xs text-muted-foreground">{zone?.code ?? "—"}</span>;
-        },
-        meta: { label: "Zona", variant: "multiSelect", options: zoneOptions, icon: MapPin },
-        enableColumnFilter: true,
-      },
-      {
-        id: "routeId",
-        accessorKey: "routeId",
-        header: "Ruta",
-        cell: ({ row }) => {
-          const r = row.original.routeId ? routes.find((x) => x.id === row.original.routeId) : null;
-          return <span className="text-xs text-muted-foreground">{r?.code ?? "—"}</span>;
-        },
-        meta: { label: "Ruta", variant: "multiSelect", options: routeOptions },
         enableColumnFilter: true,
       },
       {
@@ -225,6 +206,32 @@ export default function ClientesPage() {
         meta: { label: "Estado", variant: "multiSelect", options: STATUS_OPTIONS },
         enableColumnFilter: true,
       },
+      ...(!isFerreteriaDemoScope
+        ? [
+            {
+              id: "zoneId",
+              accessorKey: "zoneId",
+              header: "Zona",
+              cell: ({ row }) => {
+                const zone = row.original.zoneId ? zones.find((z) => z.id === row.original.zoneId) : null;
+                return <span className="text-xs text-muted-foreground">{zone?.code ?? "—"}</span>;
+              },
+              meta: { label: "Zona", variant: "multiSelect", options: zoneOptions },
+              enableColumnFilter: true,
+            } satisfies ColumnDef<Customer>,
+            {
+              id: "routeId",
+              accessorKey: "routeId",
+              header: "Ruta",
+              cell: ({ row }) => {
+                const r = row.original.routeId ? routes.find((x) => x.id === row.original.routeId) : null;
+                return <span className="text-xs text-muted-foreground">{r?.code ?? "—"}</span>;
+              },
+              meta: { label: "Ruta", variant: "multiSelect", options: routes.map((r) => ({ label: r.code, value: r.id })) },
+              enableColumnFilter: true,
+            } satisfies ColumnDef<Customer>,
+          ]
+        : []),
       {
         id: "actions",
         header: "",
@@ -312,7 +319,7 @@ export default function ClientesPage() {
         },
       },
     ],
-    [zones, routes, zoneOptions, routeOptions, can],
+    [zones, routes, zoneOptions, can, isFerreteriaDemoScope],
   );
 
   const { table } = useDataTable({
@@ -355,7 +362,9 @@ export default function ClientesPage() {
       })
       .finally(() => { initialLoadDone.current = true; setLoading(false); });
   }, [filterParams]);
-  fetchPageRef.current = fetchPage;
+  React.useEffect(() => {
+    fetchPageRef.current = fetchPage;
+  }, [fetchPage]);
 
   React.useEffect(() => { void fetchPage(); }, [fetchPage]);
 
@@ -419,6 +428,7 @@ export default function ClientesPage() {
         sellers={sellers.map((s) => ({ id: s.id, first_name: s.first_name, last_name: s.last_name }))}
         zones={zones.map((z) => ({ id: z.id, code: z.code, name: z.name }))}
         routes={routes.map((r) => ({ id: r.id, code: r.code, name: r.name, zoneId: r.zoneId }))}
+        hideDistributionFields={isFerreteriaDemoScope}
       />
     </>
   );

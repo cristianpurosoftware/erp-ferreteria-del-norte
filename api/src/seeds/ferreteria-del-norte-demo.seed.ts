@@ -12,6 +12,7 @@ import { WarehouseEntity } from '../modules/warehouses/data_access/warehouse.ent
 import { StockEntity } from '../modules/inventory/data_access/stock.entity';
 import { PriceListEntity } from '../modules/price-lists/data_access/price-list.entity';
 import { PriceListItemEntity } from '../modules/price-lists/data_access/price-list-item.entity';
+import { CustomerEntity } from '../modules/customers/data_access/customer.entity';
 
 interface CatalogJson {
   categories: { name: string; parent: string | null }[];
@@ -52,6 +53,100 @@ const BRAND_SEEDS = [
   'Truper',
   'Crescent',
   'Sin Marca',
+];
+
+
+const RETAIL_CUSTOMER_SEEDS = [
+  {
+    customerType: 'company',
+    legalName: 'Constructora Barrio Norte S.R.L.',
+    commercialName: 'Constructora Barrio Norte',
+    taxId: '30-71910001-1',
+    taxCondition: 'Responsable Inscripto',
+    channel: 'Cuenta corriente',
+    phone: '+54 11 4755-2100',
+    email: 'compras@barionorte.com.ar',
+    category: 'A',
+    creditLimit: 850000,
+    creditPolicy: 'normal',
+    blockOnOverdue: false,
+    overdueDaysThreshold: 30,
+  },
+  {
+    customerType: 'company',
+    legalName: 'Mantenimiento Integral Palermo S.A.S.',
+    commercialName: 'MIP Servicios',
+    taxId: '30-71910002-2',
+    taxCondition: 'Responsable Inscripto',
+    channel: 'Cuenta corriente',
+    phone: '+54 11 4760-1188',
+    email: 'administracion@mipservicios.com.ar',
+    category: 'A',
+    creditLimit: 620000,
+    creditPolicy: 'normal',
+    blockOnOverdue: false,
+    overdueDaysThreshold: 30,
+  },
+  {
+    customerType: 'company',
+    legalName: 'Pinturería San Martín S.H.',
+    commercialName: 'Pinturería San Martín',
+    taxId: '30-71910003-3',
+    taxCondition: 'Monotributo',
+    channel: 'Mostrador',
+    phone: '+54 11 4722-3344',
+    email: 'pedidos@pintureriasanmartin.com.ar',
+    category: 'B',
+    creditLimit: 250000,
+    creditPolicy: 'normal',
+    blockOnOverdue: false,
+    overdueDaysThreshold: 30,
+  },
+  {
+    customerType: 'individual',
+    legalName: 'Martín Álvarez',
+    commercialName: 'Martín Álvarez',
+    taxId: '20-27191004-4',
+    taxCondition: 'Consumidor Final',
+    channel: 'Mostrador',
+    phone: '+54 11 4777-4501',
+    email: 'martin.alvarez@example.com',
+    category: 'C',
+    creditLimit: 0,
+    creditPolicy: 'normal',
+    blockOnOverdue: false,
+    overdueDaysThreshold: 0,
+  },
+  {
+    customerType: 'company',
+    legalName: 'Administración Consorcio Las Heras 2240',
+    commercialName: 'Consorcio Las Heras 2240',
+    taxId: '30-71910005-5',
+    taxCondition: 'Exento',
+    channel: 'Cuenta corriente',
+    phone: '+54 11 4800-2200',
+    email: 'administracion@consorciolh2240.com.ar',
+    category: 'B',
+    creditLimit: 180000,
+    creditPolicy: 'strict',
+    blockOnOverdue: true,
+    overdueDaysThreshold: 45,
+  },
+  {
+    customerType: 'individual',
+    legalName: 'Laura Fernández',
+    commercialName: 'Laura Fernández',
+    taxId: '27-30191006-6',
+    taxCondition: 'Consumidor Final',
+    channel: 'Mostrador',
+    phone: '+54 11 4812-9088',
+    email: 'laura.fernandez@example.com',
+    category: 'C',
+    creditLimit: 0,
+    creditPolicy: 'normal',
+    blockOnOverdue: false,
+    overdueDaysThreshold: 0,
+  },
 ];
 
 const WALKTHROUGH_STOCK_BY_SKU: Record<string, number> = {
@@ -103,6 +198,7 @@ export async function seedFerreteriaDelNorteDemo() {
   const stockRepo = AppDataSource.getRepository(StockEntity);
   const priceListRepo = AppDataSource.getRepository(PriceListEntity);
   const priceListItemRepo = AppDataSource.getRepository(PriceListItemEntity);
+  const customerRepo = AppDataSource.getRepository(CustomerEntity);
 
   // ─── 0. Pre-requisites ────────────────────────────────
   const warehouses = await warehouseRepo.find({ where: { status: 'active' } });
@@ -118,6 +214,24 @@ export async function seedFerreteriaDelNorteDemo() {
   }
   const suppliers = await supplierRepo.find({ where: { status: 'active' } });
   console.log(`[ferreteria-del-norte] ${suppliers.length} suppliers ready.`);
+
+  // ─── 1b. Retail customers ─────────────────────────────
+  let customersCreated = 0;
+  for (const c of RETAIL_CUSTOMER_SEEDS) {
+    const existing = await customerRepo.findOneBy({ taxId: c.taxId });
+    if (!existing) {
+      await customerRepo.save(customerRepo.create({
+        ...c,
+        status: 'active',
+        assignedSellerId: null,
+        priceListId: null,
+        zoneId: null,
+        routeId: null,
+      } as Partial<CustomerEntity>));
+      customersCreated++;
+    }
+  }
+  console.log(`[ferreteria-del-norte] Retail customers ready: ${RETAIL_CUSTOMER_SEEDS.length} (${customersCreated} created).`);
 
   // ─── 2. Brands ───────────────────────────────────────
   const brands: BrandEntity[] = [];
